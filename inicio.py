@@ -7,8 +7,9 @@ import os
 import threading
 
 class App:
-    def __init__(self, root):
+    def __init__(self, root, usuario_email):
         self.root = root
+        self.usuario_email = usuario_email  
         self.root.title("Sistema de Monitoreo")
         self.root.attributes("-fullscreen", True)  
         self.root.configure(bg="white")
@@ -34,9 +35,9 @@ class App:
         self.frame_botones.place(relx=0.5, rely=0.8, anchor=tk.CENTER)
 
         botones = [
-            ("Iniciar", abrir_ventana_camara),
+            ("Iniciar", lambda: abrir_ventana_camara(self.usuario_email)),  
             ("Test D2R", self.ejecutar_test_d2r),
-            ("Resultados", iniciar_busqueda_datos_usuario), 
+            ("Resultados", lambda: iniciar_busqueda_datos_usuario(self.usuario_email)),
             ("Salir", self.salir)
         ]
 
@@ -63,7 +64,7 @@ class App:
         
         def ejecutar():
             try:
-                iniciar_test()
+                iniciar_test(self.usuario_email) 
             except Exception as e:
                 print(f"Error al ejecutar Test D2R: {e}")
             finally:
@@ -71,13 +72,13 @@ class App:
 
         hilo = threading.Thread(target=ejecutar, daemon=True)
         hilo.start()
-    
+
     def salir(self):
         self.root.attributes("-fullscreen", False) 
         self.root.destroy()
         os._exit(0)
 
-def abrir_ventana_principal():
+def abrir_ventana_principal(usuario_email):
     root = tk.Tk()
-    app = App(root)
+    app = App(root, usuario_email)
     root.mainloop()

@@ -1,0 +1,8 @@
+psycopg2==2.9.10
+pillow==10.2.0
+opencv-python==4.10.0.84
+opencv-contrib-python==4.11.0.86
+matplotlib==3.8.3
+PyMuPDF==1.25.3
+numpy==1.26.4
+mediapipe==0.10.20

@@ -4,12 +4,12 @@ import random
 from database import conexion_db
 
 connection = conexion_db()
-cursor = connection.cursor()
 
 def tabla_test(connection):
     query = """
     CREATE TABLE IF NOT EXISTS Test (
         id SERIAL PRIMARY KEY,
+        correo VARCHAR(50) NOT NULL REFERENCES Usuarios(correo) ON DELETE CASCADE,
         total INT NOT NULL,
         aciertos INT NOT NULL,
         errores INT NOT NULL,
@@ -21,7 +21,7 @@ def tabla_test(connection):
             cursor.execute(query)
             connection.commit()
     except Exception as e:
-        print(f"❌ Error creando la tabla 'ResultadosTest': {e}")
+        print(f"❌ Error creando la tabla 'Test': {e}")
 
 tabla_test(connection)
 
@@ -89,7 +89,7 @@ def temporizador_fila(fila, tiempo_restante):
     else:
         bloquear_fila(fila)
 
-def guardar_resultados():
+def guardar_resultados(correo_usuario):
     try:
         with connection.cursor() as cursor:
             # Según el manual del test D2-R:
@@ -101,17 +101,17 @@ def guardar_resultados():
             IC = (neto / total_targets * 100) if total_targets > 0 else 0
 
             query = """
-            INSERT INTO Test (total, aciertos, errores, indice_concentracion)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO Test (correo, total, aciertos, errores, indice_concentracion)
+            VALUES (%s, %s, %s, %s, %s)
             """
-            cursor.execute(query, (TOT, TA, errores_comision + errores_omision, IC))
+            cursor.execute(query, (correo_usuario, TOT, TA, errores_comision + errores_omision, IC))
             connection.commit()
     except Exception as e:
         messagebox.showerror("Error", f"Error al guardar los resultados: {e}")
 
-def mostrar_resultados():
+def mostrar_resultados(correo_usuario):
     global root
-    guardar_resultados()
+    guardar_resultados(correo_usuario)
     
     total_targets = TA + errores_omision
     neto = TA - errores_comision
@@ -127,10 +127,10 @@ def mostrar_resultados():
     messagebox.showinfo("Resultados del Test", mensaje)
     root.destroy()  
 
-def finalizar_test():
-    mostrar_resultados()
+def finalizar_test(correo_usuario):
+    mostrar_resultados(correo_usuario)
 
-def iniciar_test():
+def iniciar_test(correo_usuario):
     global root, botones, finalizar_btn, temporizador_label
     root = tk.Tk()
     root.title("Test D2-R")
@@ -179,7 +179,7 @@ def iniciar_test():
     iniciar_btn = tk.Button(frame_inferior, text="Iniciar", command=lambda: comenzar_test(), font=("Arial", 16), bg="green", fg="white", padx=15, pady=5, relief="ridge", bd=3)
     iniciar_btn.pack(side="left", padx=5)
 
-    finalizar_btn = tk.Button(frame_inferior, text="Finalizar Test", command=finalizar_test, font=("Arial", 16), bg="orange", fg="white", padx=15, pady=5, relief="ridge", bd=3)
+    finalizar_btn = tk.Button(frame_inferior, text="Finalizar Test", command=lambda: finalizar_test(correo_usuario), font=("Arial", 16), bg="orange", fg="white", padx=15, pady=5, relief="ridge", bd=3)
     finalizar_btn.pack(side="left", padx=5)
     finalizar_btn.config(state="disabled")
 
